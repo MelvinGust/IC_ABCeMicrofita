@@ -75,8 +75,21 @@ The functions in the library are given below in the following format: ($Name)-(#
     #define RASTRIGINMAX 5.12
 
     /*
-    Definitions for 
+    Definitions for extream of each function
     */
+   #define ACKLEYEXTREMA 0.0
+   #define SPHEREEXTREMA 0.0
+   #define BEALEEXTREMA 0.0
+   #define BIRDEXTREMA -106.764537
+   #define BOOTHEXTREMA 0.0
+   #define BUKIN6EXTREMA 0.0
+   #define CARROMTABLEEXTREMA -24.1568
+   #define CHICHINADZEEXTREMA -42.944387
+   #define CROSSINTRAYEXTREMA -2.06261
+   #define CROSSLEGTABLEEXTREMA -1.0
+   #define ROOTEXTREMA
+   #define SCHAFFERN4EXTREMA 
+
 
     /*
     This description applies to every function declared.
@@ -85,9 +98,11 @@ The functions in the library are given below in the following format: ($Name)-(#
     @param var[]: Array containing the variables of the point to be evaluated.
     @return Value of function at point specified by var[].
     */
-    extern double ackleyFunction(double var[], int size); //Evaluated on hypercube Xi-[-32.768, 32.768].
-    extern double sphereFunction(double var[], int size); //Evaluated on hypercube Xi-[-5.12, 5.12]
-    extern double bealeFunction(double var[], int size); //Evaluated on square Xi-[-4.5, 4.5].
+    extern double ackleyFunction(double *varArray, int size); //Evaluated on hypercube Xi-[-32.768, 32.768].
+    extern double sphereFunction(double *varArray, int size); //Evaluated on hypercube Xi-[-5.12, 5.12]
+    extern double bealeFunction(double *varArray, int size); //Evaluated on square Xi-[-4.5, 4.5].
+
+    /*
     extern double birdFunction(double var[], int size); //Evaluated on square Xi-[-2PI, 2PI].
     extern double boothFunction(double var[], int size); //Evaluated on square Xi-[-10, 10].
     extern double bukin6Function(double var[], int size); //Evaluated on square X0-[-15, -5], X1-[-3,3].
@@ -97,5 +112,8 @@ The functions in the library are given below in the following format: ($Name)-(#
     extern double crosslegtableFunction(double var[], int size); //Evaluated on square Xi-[-10,10]
     extern double rosenbrockFunction(double var[], int size); //Evaluated on hypercube Xi-[-5, 10]
     extern double rastriginFunction(double var[], int size); //Evaluated on hypercube Xi-[-5.12,5.12]
+    extern double rootFunction(double var[], int size);
+    extern double schafferFunction(double var[], int size);
+    */
 
 #endif

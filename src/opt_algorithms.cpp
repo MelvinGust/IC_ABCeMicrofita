@@ -14,34 +14,37 @@ functions.
 #include <opt_algorithms.hpp>
 #include <math.h>
 
-double ackleyFunction(double var[], int size){
+double ackleyFunction(double *varArray, int size){ // var[] ou *var
     double sum_varsqr, sum_varcos;
     // I'm using the suggested values for these variables.
     double a=20;
     double b=0.2;
     double c=2*PI;
-    for(int w = 0; w < size; w++){
-        sum_varsqr = pow(var[w],2);
-        sum_varcos = cos(c*var[w]);
+    for(int counter = 0; counter < size; varArray++){
+        sum_varsqr = pow((*varArray),2);
+        sum_varcos = cos((*varArray));
+        counter++;
     }
     return (-a)*exp((-b)*sqrt((1.0/(double)size)*(sum_varsqr)))-exp((1.0/(double)size)*sum_varcos)+a+exp(1.0);
 }
 
-double sphereFunction(double var[], int size){
+double sphereFunction(double *varArray, int size){
     double result = 0.0;
-    for(int w = 0; w < size; w++){
-        result = result + pow(var[w],2);
+    for(int counter = 0; counter < size; varArray++){
+        result = result + pow((*varArray),2);
+        counter++;
     }
     return result;
 }
 
-double bealeFunction(double var[], int size){
-    double exp1 = pow((1.5-var[0]+var[0]*var[1]),2);
-    double exp2 = pow((2.25-var[0]+var[0]*pow(var[1],2)),2);
-    double exp3 = pow((2.625-var[0]+var[0]*pow(var[1],3)),2);
+double bealeFunction(double *varArray, int size){
+    double exp1 = pow((1.5-(*varArray)+(*varArray)*(*(varArray+1)),2));
+    double exp2 = pow((2.25-(*varArray)+(*varArray)*pow(*(varArray+1),2)),2);
+    double exp3 = pow((2.625-(*varArray)+(*varArray)*pow(*(varArray+1),3)),2);
     return exp1+exp2+exp3;
 }
 
+/*
 double birdFunction(double var[], int size){
     double exp1 = sin(var[0])*exp(pow(1-cos(var[1]),2));
     double exp2 = cos(var[1])*exp(pow(1-sin(var[0]),2));
@@ -100,3 +103,4 @@ double rastriginFunction(double var[], int size){
     }
     return result;
 }
+*/

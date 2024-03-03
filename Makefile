@@ -7,7 +7,7 @@
 
 SRC_DIR := src
 OBJ_DIR := obj
-BIN_DIR := bin
+BIN_DIR := bin 
 EXE := $(BIN_DIR)/abc # Executable is named abc.exe
 SRC := $(wildcard $(SRC_DIR)/*.cpp) # Via /* I get every .c file from the SRC_DIR.
 
@@ -22,8 +22,9 @@ OBJ := $(patsubst $(SRC_DIR)/%.cpp, $(OBJ_DIR)/%.o, $(SRC))
 # it's gonna search for header files inside of the include directory.
 # -MMD : Generates the header dependency file (.d) for the Makefile.
 # -MP : Generates .Phony targets for each header file. (?)
+# -Ox : Optimize the code
 CPPFLAGS := -Iinclude -MMD -MP # C Pre-processor flags
-CXXFLAGS := -Wall -Wextra
+CXXFLAGS := -Wall -Wextra 
 CXX := g++
 LDFLAGS := -Llib # -L : Linker flag
 LDLIBS := #-lm # Since I need no libraries, this is left empty.
