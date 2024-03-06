@@ -7,8 +7,8 @@
 
 SRC_DIR := src
 OBJ_DIR := obj
-BIN_DIR := bin 
-EXE := $(BIN_DIR)/abc # Executable is named abc.exe
+BIN_DIR := binary
+EXE := $(BIN_DIR)\abc # Executable is named abcv5.exe
 SRC := $(wildcard $(SRC_DIR)/*.cpp) # Via /* I get every .c file from the SRC_DIR.
 
 # In the following code, I list every .c file inside of the src directory and replace them with the
@@ -24,7 +24,7 @@ OBJ := $(patsubst $(SRC_DIR)/%.cpp, $(OBJ_DIR)/%.o, $(SRC))
 # -MP : Generates .Phony targets for each header file. (?)
 # -Ox : Optimize the code
 CPPFLAGS := -Iinclude -MMD -MP # C Pre-processor flags
-CXXFLAGS := -Wall -Wextra 
+CXXFLAGS := -Wall -Wextra -O3
 CXX := g++
 LDFLAGS := -Llib # -L : Linker flag
 LDLIBS := #-lm # Since I need no libraries, this is left empty.
@@ -39,7 +39,7 @@ all: $(EXE) # Default target on Make depends on the existence of my executable.
 # exist, and it WON'T recompile our file if it's modified.
 # $@ is the name of the target being generated -> $(EXE)
 # $< the first prerequisite -> $(OBJ)
-$(EXE): $(OBJ) | $(BIN_DIR)
+$(EXE): $(OBJ) # Note the mkdir -p is specifically for UNIX based platforms, creating the -p directory.
 	$(CXX) $(LDFLAGS) $^ $(LDLIBS) -o $@
 
 # ------------------- COMPILATION PHASE ---------------------
@@ -51,15 +51,17 @@ $(EXE): $(OBJ) | $(BIN_DIR)
 $(OBJ_DIR)/%.o: $(SRC_DIR)/%.cpp | $(OBJ_DIR)
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c $< -o $@
 
-# This is used whenever both directories required aren't present. It creates them.
-$(BIN_DIR) $(OBJ_DIR):
-	mkdir -p $@
-
 # ------------------- CLEAN-UP PHASE ---------------------
 # Here we define a clean command that removes files inside of our bin and obj directories.
 # Note $(RM) is a make implicit variable which becomes: rm -f
 .PHONY: clean
 clean:
-	@$(RM) -rv $(BIN_DIR) $(OBJ_DIR)
+	del /Q $(BIN_DIR)\*
+	rmdir $(BIN_DIR) /s /q
+	del /Q $(OBJ_DIR)\*
+
+.PHONY: create
+create:
+	mkdir $(BIN_DIR)
 
 -include $(OBJ:.o=.d)

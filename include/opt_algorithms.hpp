@@ -36,8 +36,15 @@ The functions in the library are given below in the following format: ($Name)-(#
 26 - Rosenbrock function (Many): https://www.sfu.ca/~ssurjano/rosen.html
 27 - Rastrigin function (Many): https://www.sfu.ca/~ssurjano/rastr.html
 28 - (*) Root function: An artificial immune network for multimodal function optimization IEEE
-29 - (*) Schaffer No.4 Function:
+29 - (*) Schaffer No.4 Function: https://www.sfu.ca/~ssurjano/schaffer4.html
+
+Some functions can be found in various research papers, such as:
+(i) Some new test functions for global optimization and performance of repulsive particle swarm method.
+    https://mpra.ub.uni-muenchen.de/2718/1/MPRA_paper_2718.pdf, 23 of August 2006
+(ii)
 */
+#include <vector>
+#include <complex>
 
 #ifndef HEADEROPTALGORITHM
     #define HEADEROPTALGORITHM
@@ -73,9 +80,13 @@ The functions in the library are given below in the following format: ($Name)-(#
     #define ROSENBROCKMAX 10
     #define RASTRIGINMIN -5.12
     #define RASTRIGINMAX 5.12
+    #define SCHAFFERN4MIN -100
+    #define SCHAFFERN4MAX 100
+    #define ROOTSMIN -2
+    #define ROOTSMAX 2
 
     /*
-    Definitions for extream of each function
+    Definitions for extrema of each function
     */
    #define ACKLEYEXTREMA 0.0
    #define SPHEREEXTREMA 0.0
@@ -87,9 +98,8 @@ The functions in the library are given below in the following format: ($Name)-(#
    #define CHICHINADZEEXTREMA -42.944387
    #define CROSSINTRAYEXTREMA -2.06261
    #define CROSSLEGTABLEEXTREMA -1.0
-   #define ROOTEXTREMA
+   #define ROOTEXTREMA 
    #define SCHAFFERN4EXTREMA 
-
 
     /*
     This description applies to every function declared.
@@ -98,22 +108,20 @@ The functions in the library are given below in the following format: ($Name)-(#
     @param var[]: Array containing the variables of the point to be evaluated.
     @return Value of function at point specified by var[].
     */
-    extern double ackleyFunction(double *varArray, int size); //Evaluated on hypercube Xi-[-32.768, 32.768].
-    extern double sphereFunction(double *varArray, int size); //Evaluated on hypercube Xi-[-5.12, 5.12]
-    extern double bealeFunction(double *varArray, int size); //Evaluated on square Xi-[-4.5, 4.5].
-
-    /*
-    extern double birdFunction(double var[], int size); //Evaluated on square Xi-[-2PI, 2PI].
-    extern double boothFunction(double var[], int size); //Evaluated on square Xi-[-10, 10].
-    extern double bukin6Function(double var[], int size); //Evaluated on square X0-[-15, -5], X1-[-3,3].
-    extern double carromtableFunction(double var[], int size); //Evaluated on square Xi-[-10, 10]
-    extern double chichinadzeFunction(double var[], int size); //Evaluated on square Xi-[-30,30]
-    extern double crossintrayFunction(double var[], int size); //Evaluated on square Xi-[-10,10]
-    extern double crosslegtableFunction(double var[], int size); //Evaluated on square Xi-[-10,10]
-    extern double rosenbrockFunction(double var[], int size); //Evaluated on hypercube Xi-[-5, 10]
-    extern double rastriginFunction(double var[], int size); //Evaluated on hypercube Xi-[-5.12,5.12]
-    extern double rootFunction(double var[], int size);
-    extern double schafferFunction(double var[], int size);
-    */
+    extern double ackleyFunction(const std::vector<double> &var, int numVar); //Evaluated on hypercube Xi-[-32.768, 32.768].
+    extern double sphereFunction(const std::vector<double> &var, int numVar); //Evaluated on hypercube Xi-[-5.12, 5.12]
+    extern double bealeFunction(const std::vector<double> &var, int numVar); //Evaluated on square Xi-[-4.5, 4.5].
+    extern double birdFunction(const std::vector<double> &var, int numVar); //Evaluated on square Xi-[-2PI, 2PI].
+    extern double boothFunction(const std::vector<double> &var, int numVar); //Evaluated on square Xi-[-10, 10].
+    extern double bukin6Function(const std::vector<double> &var, int numVar); //Evaluated on square X0-[-15, -5], X1-[-3,3].
+    extern double carromtableFunction(const std::vector<double> &var, int numVar); //Evaluated on square Xi-[-10, 10]
+    extern double chichinadzeFunction(const std::vector<double> &var, int numVar); //Evaluated on square Xi-[-30,30]
+    extern double crossintrayFunction(const std::vector<double> &var, int numVar); //Evaluated on square Xi-[-10,10]
+    extern double crosslegtableFunction(const std::vector<double> &var, int numVar); //Evaluated on square Xi-[-10,10]
+    extern double rosenbrockFunction(const std::vector<double> &var, int numVar); //Evaluated on hypercube Xi-[-5, 10]
+    extern double rastriginFunction(const std::vector<double> &var, int numVar); //Evaluated on hypercube Xi-[-5.12,5.12]
+    extern double schafferN4Function(const std::vector<double> &var, int numVar); // Evaluated on square Xi-[-100,100]
+    extern std::complex<double> rootsFunction(const std::vector<std::complex<double>> &var, int numVar);
+    // extern double schafferFunction(const std::vector<double> &var, int numVar);
 
 #endif
