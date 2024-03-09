@@ -64,16 +64,16 @@ using std::complex;
 - SCOUTLIMIT : The maximum number of times a scout bee will remain in a single point.
 - NUMFORAGING : The maximum number of cycles the program will run for.
 */
-#define NUMBEES 50 // Number of bees in my population (NEEDS TO BE DIVISIBLE BY 2)
+#define NUMBEES 10000 // Number of bees in my population (NEEDS TO BE DIVISIBLE BY 2)
 #define SCOUTLIMIT 10 // Max number of times a scout will remain for some reason, bugs out for lower numbers. 
 // NOTE, Scoutlimit impacts a TON the precision of our process, apparently.
-#define NUMFORAGING 300 // Maximum cycle number
+#define NUMFORAGING 5000 // Maximum cycle number
 
 // #define teste_valores
 // #define teste_geral
 // #define teste_employed
+// #define teste_onlooker
 // #define teste_scout
-// #define teste_prob
 
 /*
 -------------------------
@@ -234,14 +234,14 @@ int main(void){
             /* ----- Initialize ----- */
             for (int i = 0; i < numfoodSources; i++){
                 for (int k = 0; k < numVariables; k++){ // This determines the 2D-ness of foodSources.
-                    foodSources.at(i).push_back(((double)rand()/((double)(RAND_MAX)))*(maxValues[k] - minValues[k]) + minValues[k]);
+                    foodSources[i].push_back(((double)rand()/((double)(RAND_MAX)))*(maxValues[k] - minValues[k]) + minValues[k]);
                     #ifdef teste_valores
-                        printf("foodSources[%d][%d] = %lf\t", i, k, foodSources[i].at(k));
+                        printf("foodSources[%d][%d] = %lf\t", i, k, foodSources[i][k]);
                     #endif
                     foodsourceNeighbor[i].push_back(0.0); // Since I'm using vectors I need to initialize them
                     bestfoodSources.push_back(0.0); // Remember to initialize vectors.
                 }
-                solutionArray.at(i) = (*optimizationFunction)(foodSources[i], numVariables);
+                solutionArray[i] = (*optimizationFunction)(foodSources[i], numVariables);
                 #ifdef teste_valores
                     printf("\nsolutionArray[%d] = %lf\n", i, solutionArray[i]);
                 #endif
@@ -307,15 +307,15 @@ int main(void){
 
                 /* ------- Scout Bee Phase ------- */
                 for(int i = 0; i < numfoodSources; i++){
-                    if( numAttempts.at(i) > 30 ){
+                    if( numAttempts[i] > 30 ){
                         #ifdef teste_geral
                         printf("Entrando em scoutBeePhase\n");
                         #endif
                         for (int k = 0; k < numVariables; k++){
-                            foodSources.at(i).at(k) = ((double)rand()/((double)(RAND_MAX)))*(maxValues.at(k) - minValues.at(k) + minValues.at(k));
+                            foodSources[i][k] = ((double)rand()/((double)(RAND_MAX)))*(maxValues[k] - minValues[k] + minValues[k]);
                         }
-                        solutionArray.at(i) = (*optimizationFunction)(foodSources[i], numVariables);
-                        numAttempts.at(i) = 0;
+                        solutionArray[i] = (*optimizationFunction)(foodSources[i], numVariables);
+                        numAttempts[i] = 0;
                     }
                 }
                 /* ------- End of scout bee phase ------- */
@@ -336,131 +336,6 @@ int main(void){
     }
 
     return 0; //Return from main
-}
-
-void initUserInput(void){
-    int numAlgorithm;
-
-    printf("Select the algorithm you'll use: ");
-    scanf("%d", &numAlgorithm);
-    switch(numAlgorithm){
-        case 1:
-            printf("You chose the Ackley Function. min=0 at (0,0,...,0) \n");
-            optimizationFunction = &ackleyFunction;
-            flagMultiDim = true;
-            numVariables = findnumVariables(flagMultiDim);
-            for(int i = 0; i < numVariables; i++){minValues.push_back(ACKLEYMIN);}
-            for(int i = 0; i < numVariables; i++){maxValues.push_back(ACKLEYMAX);}
-            break;
-        case 2:
-            printf("You chose the Sphere Function. min=0 at (0,0,..,0) \n");
-            optimizationFunction = &sphereFunction;
-            flagMultiDim = true;
-            numVariables = findnumVariables(flagMultiDim);
-            for(int i = 0; i < numVariables; i++){minValues.push_back(SPHEREMIN);}
-            for(int i = 0; i < numVariables; i++){maxValues.push_back(SPHEREMAX);}
-            break;
-        case 3:
-            printf("You chose the Beale Function. min=0 at (3, 0.5) \n");
-            optimizationFunction = &bealeFunction;
-            flagMultiDim = false;
-            numVariables = findnumVariables(flagMultiDim);
-            for(int i = 0; i < numVariables; i++){minValues.push_back(BEALEMIN);}
-            for(int i = 0; i < numVariables; i++){maxValues.push_back(BEALEMAX);}
-            break;
-        case 4:
-            printf("You chose the Bird Function. min=-106.764537 at (4.70104, 3.15294) and (-1.58214, -3.13024) \n");
-            optimizationFunction = &birdFunction;
-            flagMultiDim = false;
-            numVariables = findnumVariables(flagMultiDim);
-            for(int i = 0; i < numVariables; i++){minValues.push_back(BIRDMIN);}
-            for(int i = 0; i < numVariables; i++){maxValues.push_back(BIRDMAX);}
-            break;
-        case 5:
-            printf("You chose the Booth Function. min=0 at (1, 3) \n");
-            optimizationFunction = &boothFunction;
-            flagMultiDim = false;
-            numVariables = findnumVariables(flagMultiDim);
-            for(int i = 0; i < numVariables; i++){minValues.push_back(BOOTHMIN);}
-            for(int i = 0; i < numVariables; i++){maxValues.push_back(BOOTHMAX);}
-            break;
-        case 6:
-            printf("You chose the Bukin6 Function. min=0 at (-10, 1) \n");
-            optimizationFunction = &bukin6Function;
-            flagMultiDim = false;
-            numVariables = findnumVariables(flagMultiDim);
-            for(int i = 0; i < numVariables; i++){(i==0)?(minValues.push_back(BUKIN6XMIN)):(minValues.push_back(BUKIN6YMIN));}
-            for(int i = 0; i < numVariables; i++){(i==0)?(maxValues.push_back(BUKIN6XMAX)):(maxValues.push_back(BUKIN6YMAX));}
-            break;
-        case 7:
-            printf("You chose the Carromtable Function. min=-24.1568 at (+-9.64615, +-9.64615) \n");
-            optimizationFunction = &carromtableFunction;
-            flagMultiDim = false;
-            numVariables = findnumVariables(flagMultiDim);
-            for(int i = 0; i < numVariables; i++){minValues.push_back(CARROMTABLEMIN);}
-            for(int i = 0; i < numVariables; i++){maxValues.push_back(CARROMTABLEMAX);}
-            break;
-        case 8:
-            printf("You chose the Chichinadze Function. min=-42.944387 at (6.189866, 0.5) \n");
-            optimizationFunction = &chichinadzeFunction;
-            flagMultiDim = false;
-            numVariables = findnumVariables(flagMultiDim);
-            for(int i = 0; i < numVariables; i++){minValues.push_back(CHICHINADZEMIN);}
-            for(int i = 0; i < numVariables; i++){maxValues.push_back(CHICHINADZEMAX);}
-            break;
-        case 9:
-            printf("You chose the Cross-in-tray Function. min=-2.06261 at (+-1.3491, +-1.3491) \n");
-            optimizationFunction = &crossintrayFunction;
-            flagMultiDim = false;
-            numVariables = findnumVariables(flagMultiDim);
-            for(int i = 0; i < numVariables; i++){minValues.push_back(CROSSINTRAYMIN);}
-            for(int i = 0; i < numVariables; i++){maxValues.push_back(CROSSINTRAYMAX);}
-            break;
-        case 10:
-            printf("You chose the Cross-Leg Table Function. min=-1 at (0, X) or (X, 0) \n");
-            optimizationFunction = &crosslegtableFunction;
-            flagMultiDim = false;
-            numVariables = findnumVariables(flagMultiDim);
-            for(int i = 0; i < numVariables; i++){minValues.push_back(CROSSLEGTABLEMIN);}
-            for(int i = 0; i < numVariables; i++){maxValues.push_back(CROSSLEGTABLEMAX);}
-            break;
-        case 11:
-            printf("You chose the Modified Schaffer N4 Function. min=0.292579 at (0, +-1.253132) and (+-1.253132, 0)  \n");
-            flagComplex = false;
-            flagMultiDim = false;
-            optimizationFunction = &schafferN4Function;
-            numVariables = findnumVariables(flagMultiDim);
-            for(int i = 0; i < numVariables; i++){minValues.push_back(SCHAFFERN4MIN);}
-            for(int i = 0; i < numVariables; i++){maxValues.push_back(SCHAFFERN4MAX);}
-            break;
-        case 12:
-            printf("You chose the Roots Function. max=abs(f(z))=1 at the sixth roots of unity. \n");
-            flagComplex = true;
-            flagMultiDim = false;
-            optimizationComplexFunction = &rootsFunction;
-            numVariables = 1; //I've got how many variables, again? This might cause problems.
-            for(int i = 0; i < numVariables; i++){minValues.push_back(ROOTSMIN);}
-            for(int i = 0; i < numVariables; i++){maxValues.push_back(ROOTSMAX);}
-            break;
-        case 13:    
-        case 14:
-        case 15:
-        case 16:
-        case 17:
-        case 18:
-        case 19:
-        case 20:
-        case 21:
-        case 22:
-        case 23:
-        case 24:
-        case 25:
-        case 26:
-        case 27:
-        default:
-            printf("ERROR: Invalid input. Write an integer from 0-29.");
-            //Find way to deal with this case
-    }
 }
 
 int findnumVariables(bool flagMultiDim){ //Why does this function require flagMultiDim?
@@ -494,10 +369,10 @@ The other arrays that are modified are global to the program.
 */
 void saveBestSolution(vector<double> &bestfoodSources, const array<vector<double>, numfoodSources> &foodSources, const array<double, numfoodSources> &solutionArray, int numSolutions, int numVariables){
     for (int i = 0; i < numSolutions; i++){
-        if (solutionArray.at(i) < bestSolution ){ 
-            bestSolution = solutionArray.at(i);        
+        if (solutionArray[i] < bestSolution ){ 
+            bestSolution = solutionArray[i];        
             for (int k = 0; k < numVariables; k++){
-                bestfoodSources[k] = foodSources[i].at(k);
+                bestfoodSources[k] = foodSources[i][k];
             }    
         }
     }
@@ -520,22 +395,22 @@ void employedBees(array<vector<double>, numfoodSources> &foodSources, array<vect
                 printf("O index aleatorio calculado is %d\n", randomIndex);
                 printf("O valor aleatorio calculado is %lf\n", randomValue);
             #endif
-            double randomfoodSource = randomValue*(foodSources[i].at(k) - foodSources[randomIndex].at(k)); 
+            double randomfoodSource = randomValue*(foodSources[i][k] - foodSources[randomIndex][k]); 
             #ifdef teste_employed
                 printf("Nao tive problemas para determinar o randomfoodSource, obtendo: %lf \n", randomfoodSource);
             #endif
             // Note that as the difference between foodSources becomes smaller, so does the perturbation of the foodSource.
-            foodsourceNeighbor[i].at(k) = foodSources[i].at(k) + randomfoodSource;
+            foodsourceNeighbor[i][k] = foodSources[i][k] + randomfoodSource;
             #ifdef teste_employed
                 printf("Estou tendo problemas para modificar foodsourceNeighbor");
             #endif
 
             // Here we position our foodsource back in the constraints defined previously for our problem.        
-            if(foodsourceNeighbor[i].at(k) > maxValues[k]){
-                foodsourceNeighbor[i].at(k) = maxValues[k];
+            if(foodsourceNeighbor[i][k] > maxValues[k]){
+                foodsourceNeighbor[i][k] = maxValues[k];
             } else {
-                if(foodsourceNeighbor[i].at(k) < minValues[k]){
-                    foodsourceNeighbor[i].at(k) = minValues[k];
+                if(foodsourceNeighbor[i][k] < minValues[k]){
+                    foodsourceNeighbor[i][k] = minValues[k];
                 }
             }
         }
@@ -551,7 +426,7 @@ void employedBees(array<vector<double>, numfoodSources> &foodSources, array<vect
         if (solutionNeighbor[i] < solutionArray[i]){    
             solutionArray[i] = solutionNeighbor[i];        
             for (int k = 0; k < numVariables; k++){
-                foodSources[i].at(k) = foodsourceNeighbor[i].at(k);
+                foodSources[i][k] = foodsourceNeighbor[i][k];
             }
             numAttempts[i] = 0;
         } else {
@@ -565,7 +440,7 @@ void onlookerBees(array<vector<double>, numfoodSources> &foodSources, array<vect
     while(numActiveOnlookers < numSolutions){
         double randomProb = (double)rand()/((double)(RAND_MAX)); // randomProb -> [0,1]
         // foodSources with higher probability index are more likely to be chosen.
-        #ifdef teste_prob
+        #ifdef teste_onlooker
             printf("%lf\t", probability[index]);
         #endif
         if(randomProb < probability[index]){ // Runs until every single onlooker has been used.
@@ -576,13 +451,13 @@ void onlookerBees(array<vector<double>, numfoodSources> &foodSources, array<vect
                 do{ // Calculate a randomIndex until it's different than the selected index
                 randomIndex = rand()%(numSolutions);
                 }while(randomIndex == index); 
-                double randomfoodSource = randomValue*(foodSources[index].at(k) - foodSources[randomIndex].at(k));
-                foodsourceNeighbor[index].at(k) = foodSources[index].at(k) + randomfoodSource;
-                if(foodsourceNeighbor[index].at(k) > maxValues[k]){ // Move foodsource back to constraints if needed
-                    foodsourceNeighbor[index].at(k) = maxValues[k];
+                double randomfoodSource = randomValue*(foodSources[index][k] - foodSources[randomIndex][k]);
+                foodsourceNeighbor[index][k] = foodSources[index][k] + randomfoodSource;
+                if(foodsourceNeighbor[index][k] > maxValues[k]){ // Move foodsource back to constraints if needed
+                    foodsourceNeighbor[index][k] = maxValues[k];
                 }else{
-                    if(foodsourceNeighbor[index].at(k) < minValues[k]){
-                        foodsourceNeighbor[index].at(k) = minValues[k];
+                    if(foodsourceNeighbor[index][k] < minValues[k]){
+                        foodsourceNeighbor[index][k] = minValues[k];
                     }
                 }
             }
@@ -592,13 +467,16 @@ void onlookerBees(array<vector<double>, numfoodSources> &foodSources, array<vect
             if (solutionNeighbor[index] < solutionArray[index]){    
                 solutionArray[index] = solutionNeighbor[index];        
                 for (int k = 0; k < numVariables; k++){
-                    foodSources[index].at(k) = foodsourceNeighbor[index].at(k);
+                    foodSources[index][k] = foodsourceNeighbor[index][k];
                 }
                 numAttempts[index] = 0;
             } else {
                 numAttempts[index] = numAttempts[index] + 1;
             }
             numActiveOnlookers++;
+            #ifdef teste_onlooker
+                printf("Temos %d onlookers ativas", numActiveOnlookers);
+            #endif
         }
         index++;
         if(index==numfoodSources){index=0;}
@@ -649,7 +527,7 @@ void saveBestSolution(vector<complex<double>> &bestfoodSources, const array<vect
         if (std::abs(solutionArray[i]) > std::abs(bestSolution)){ //Maximixação
             bestComplexSolution = solutionArray[i];        
             for (int k = 0; k < numVariables; k++){
-                bestfoodSources[k] = foodSources[i].at(k);
+                bestfoodSources[k] = foodSources[i][k];
             }    
         }
     }
@@ -671,28 +549,28 @@ void employedBees(array<vector<complex<double>>, numfoodSources> &foodSources, a
                 printf("O index aleatorio calculado is %d\n", randomIndex);
                 printf("O valor aleatorio calculado is %lf\n", randomValue);
             #endif
-            complex<double> randomfoodSource = {randomValue*(std::real(foodSources[i].at(k)) - std::real(foodSources[randomIndex].at(k))) , randomValue*(std::imag(foodSources[i].at(k)) - std::imag(foodSources[randomIndex].at(k)))}; 
+            complex<double> randomfoodSource = {randomValue*(std::real(foodSources[i][k]) - std::real(foodSources[randomIndex][k])) , randomValue*(std::imag(foodSources[i][k]) - std::imag(foodSources[randomIndex][k]))}; 
             #ifdef teste_employed
                 printf("Nao tive problemas para determinar o randomfoodSource, obtendo: %lf + i%lf \n", real(randomfoodSource), imag(randomfoodSource));
             #endif
             // Note that as the difference between foodSources becomes smaller, so does the perturbation of the foodSource.
-            foodsourceNeighbor[i].at(k) = foodSources[i].at(k) + randomfoodSource;
+            foodsourceNeighbor[i][k] = foodSources[i][k] + randomfoodSource;
 
             // Constraints for real(z)      
-            if(real(foodsourceNeighbor[i].at(k)) > maxValues[k]){
-                foodsourceNeighbor[i].at(k).real(maxValues[k]);
+            if(real(foodsourceNeighbor[i][k]) > maxValues[k]){
+                foodsourceNeighbor[i][k].real(maxValues[k]);
             } else {
-                if(real(foodsourceNeighbor[i].at(k)) < minValues[k]){
-                    foodsourceNeighbor[i].at(k).real(minValues[k]);
+                if(real(foodsourceNeighbor[i][k]) < minValues[k]){
+                    foodsourceNeighbor[i][k].real(minValues[k]);
                 }
             }
 
             // Constraints for imag(z)
-            if(imag(foodsourceNeighbor[i].at(k)) > maxValues[k]){
-                foodsourceNeighbor[i].at(k).imag(maxValues[k]);
+            if(imag(foodsourceNeighbor[i][k]) > maxValues[k]){
+                foodsourceNeighbor[i][k].imag(maxValues[k]);
             } else {
-                if(imag(foodsourceNeighbor[i].at(k)) < minValues[k]){
-                    foodsourceNeighbor[i].at(k).imag(minValues[k]);
+                if(imag(foodsourceNeighbor[i][k]) < minValues[k]){
+                    foodsourceNeighbor[i][k].imag(minValues[k]);
                 }
             }
         }
@@ -708,7 +586,7 @@ void employedBees(array<vector<complex<double>>, numfoodSources> &foodSources, a
         if (abs(solutionNeighbor[i]) > abs(solutionArray[i])){    
             solutionArray[i] = solutionNeighbor[i];        
             for (int k = 0; k < numVariables; k++){
-                foodSources[i].at(k) = foodsourceNeighbor[i].at(k);
+                foodSources[i][k] = foodsourceNeighbor[i][k];
             }
             numAttempts[i] = 0;
         } else {
@@ -730,22 +608,22 @@ void onlookerBees(array<vector<complex<double>>, numfoodSources> &foodSources, a
                 do{ // Calculate a randomIndex until it's different than the selected index
                 randomIndex = rand()%(numSolutions);
                 }while(randomIndex == index); 
-                complex<double> randomfoodSource = {randomValue*(std::real(foodSources[index].at(k)) - std::real(foodSources[randomIndex].at(k))) , randomValue*(std::imag(foodSources[index].at(k)) - std::imag(foodSources[randomIndex].at(k))) }; 
-                foodsourceNeighbor[index].at(k) = foodSources[index].at(k) + randomfoodSource;
-                if(real(foodsourceNeighbor[index].at(k)) > maxValues[k]){
-                        foodsourceNeighbor[index].at(k).real(maxValues[k]);
+                complex<double> randomfoodSource = {randomValue*(std::real(foodSources[index][k]) - std::real(foodSources[randomIndex][k])) , randomValue*(std::imag(foodSources[index][k]) - std::imag(foodSources[randomIndex][k])) }; 
+                foodsourceNeighbor[index][k] = foodSources[index][k] + randomfoodSource;
+                if(real(foodsourceNeighbor[index][k]) > maxValues[k]){
+                        foodsourceNeighbor[index][k].real(maxValues[k]);
                 } else {
-                    if(real(foodsourceNeighbor[index].at(k)) < minValues[k]){
-                            foodsourceNeighbor[index].at(k).real(minValues[k]);
+                    if(real(foodsourceNeighbor[index][k]) < minValues[k]){
+                            foodsourceNeighbor[index][k].real(minValues[k]);
                     }
                 }
 
                     // Constraints for imag(z)
-                if(imag(foodsourceNeighbor[index].at(k)) > maxValues[k]){
-                    foodsourceNeighbor[index].at(k).imag(maxValues[k]);
+                if(imag(foodsourceNeighbor[index][k]) > maxValues[k]){
+                    foodsourceNeighbor[index][k].imag(maxValues[k]);
                 } else {
-                    if(imag(foodsourceNeighbor[index].at(k)) < minValues[k]){
-                       foodsourceNeighbor[index].at(k).imag(minValues[k]);
+                    if(imag(foodsourceNeighbor[index][k]) < minValues[k]){
+                       foodsourceNeighbor[index][k].imag(minValues[k]);
                     }
                 }
             }
@@ -754,7 +632,7 @@ void onlookerBees(array<vector<complex<double>>, numfoodSources> &foodSources, a
             if (abs(solutionNeighbor[index]) > abs(solutionArray[index])){    
                 solutionArray[index] = solutionNeighbor[index];        
                 for (int k = 0; k < numVariables; k++){
-                    foodSources[index].at(k) = foodsourceNeighbor[index].at(k);
+                    foodSources[index][k] = foodsourceNeighbor[index][k];
                 }
                 numAttempts[index] = 0;
             } else {
@@ -801,5 +679,278 @@ void evaluationPhase(const array<complex<double>, numfoodSources> &solutionArray
         } else {
             probability[k] = (probability[k] - minval)/(maxval-minval);
         }
+    }
+}
+
+void initUserInput(void){
+    int numAlgorithm;
+
+    printf("Select the algorithm you'll use: ");
+    scanf("%d", &numAlgorithm);
+    switch(numAlgorithm){
+        case 1:
+            printf("You chose the Ackley Function. min=0 at (0,0,...,0) \n");
+            flagComplex = false;
+            optimizationFunction = &ackleyFunction;
+            flagMultiDim = true;
+            numVariables = findnumVariables(flagMultiDim);
+            for(int i = 0; i < numVariables; i++){minValues.push_back(ACKLEYMIN);}
+            for(int i = 0; i < numVariables; i++){maxValues.push_back(ACKLEYMAX);}
+            break;
+        case 2:
+            printf("You chose the Sphere Function. min=0 at (0,0,..,0) \n");
+            flagComplex = false;
+            optimizationFunction = &sphereFunction;
+            flagMultiDim = true;
+            numVariables = findnumVariables(flagMultiDim);
+            for(int i = 0; i < numVariables; i++){minValues.push_back(SPHEREMIN);}
+            for(int i = 0; i < numVariables; i++){maxValues.push_back(SPHEREMAX);}
+            break;
+        case 3:
+            printf("You chose the Rosenbrock Function. min=0 at (1,1,..,1) \n");
+            flagComplex = false;
+            optimizationFunction = &rosenbrockFunction;
+            flagMultiDim = true;
+            numVariables = findnumVariables(flagMultiDim);
+            for(int i = 0; i < numVariables; i++){minValues.push_back(ROSENBROCKMIN);}
+            for(int i = 0; i < numVariables; i++){maxValues.push_back(ROSENBROCKMAX);}
+            break;
+        case 4:
+            printf("You chose the Rastrigin Function. min=0 at (0,0,..,0) \n");
+            flagComplex = false;
+            optimizationFunction = &rastriginFunction;
+            flagMultiDim = true;
+            numVariables = findnumVariables(flagMultiDim);
+            for(int i = 0; i < numVariables; i++){minValues.push_back(RASTRIGINMIN);}
+            for(int i = 0; i < numVariables; i++){maxValues.push_back(RASTRIGINMAX);}
+            break;
+        case 5:
+            printf("You chose the Griewank Function. min=0 at (0,0,..,0) \n");
+            flagComplex = false;
+            optimizationFunction = &griewankFunction;
+            flagMultiDim = true;
+            numVariables = findnumVariables(flagMultiDim);
+            for(int i = 0; i < numVariables; i++){minValues.push_back(GRIEWANKMIN);}
+            for(int i = 0; i < numVariables; i++){maxValues.push_back(GRIEWANKMAX);}
+            break;
+        case 6:
+            printf("You chose the Helical Valley Function. min=0 at (1,0,0) \n");
+            flagComplex = false;
+            optimizationFunction = &helicalvalleyFunction;
+            flagMultiDim = false;
+            numVariables = 3; // Magic Number
+            for(int i = 0; i < numVariables; i++){minValues.push_back(HELICALVALLEYMIN);}
+            for(int i = 0; i < numVariables; i++){maxValues.push_back(HELICALVALLEYMAX);}
+            break;
+        case 7:
+            printf("You chose the Beale Function. min=0 at (3, 0.5) \n");
+            flagComplex = false;
+            optimizationFunction = &bealeFunction;
+            flagMultiDim = false;
+            numVariables = findnumVariables(flagMultiDim);
+            for(int i = 0; i < numVariables; i++){minValues.push_back(BEALEMIN);}
+            for(int i = 0; i < numVariables; i++){maxValues.push_back(BEALEMAX);}
+            break;
+        case 8:
+            printf("You chose the Bird Function. min=-106.764537 at (4.70104, 3.15294) and (-1.58214, -3.13024) \n");
+            flagComplex = false;
+            optimizationFunction = &birdFunction;
+            flagMultiDim = false;
+            numVariables = findnumVariables(flagMultiDim);
+            for(int i = 0; i < numVariables; i++){minValues.push_back(BIRDMIN);}
+            for(int i = 0; i < numVariables; i++){maxValues.push_back(BIRDMAX);}
+            break;
+        case 9:
+            printf("You chose the Booth Function. min=0 at (1, 3) \n");
+            flagComplex = false;
+            optimizationFunction = &boothFunction;
+            flagMultiDim = false;
+            numVariables = findnumVariables(flagMultiDim);
+            for(int i = 0; i < numVariables; i++){minValues.push_back(BOOTHMIN);}
+            for(int i = 0; i < numVariables; i++){maxValues.push_back(BOOTHMAX);}
+            break;
+        case 10:
+            printf("You chose the Bukin6 Function. min=0 at (-10, 1) \n");
+            flagComplex = false;
+            optimizationFunction = &bukin6Function;
+            flagMultiDim = false;
+            numVariables = findnumVariables(flagMultiDim);
+            for(int i = 0; i < numVariables; i++){(i==0)?(minValues.push_back(BUKIN6XMIN)):(minValues.push_back(BUKIN6YMIN));}
+            for(int i = 0; i < numVariables; i++){(i==0)?(maxValues.push_back(BUKIN6XMAX)):(maxValues.push_back(BUKIN6YMAX));}
+            break;
+        case 11:
+            printf("You chose the Carromtable Function. min=-24.1568 at (+-9.64615, +-9.64615) \n");
+            flagComplex = false;
+            optimizationFunction = &carromtableFunction;
+            flagMultiDim = false;
+            numVariables = findnumVariables(flagMultiDim);
+            for(int i = 0; i < numVariables; i++){minValues.push_back(CARROMTABLEMIN);}
+            for(int i = 0; i < numVariables; i++){maxValues.push_back(CARROMTABLEMAX);}
+            break;
+        case 12:
+            printf("You chose the Chichinadze Function. min=-42.944387 at (6.189866, 0.5) \n");
+            flagComplex = false;
+            optimizationFunction = &chichinadzeFunction;
+            flagMultiDim = false;
+            numVariables = findnumVariables(flagMultiDim);
+            for(int i = 0; i < numVariables; i++){minValues.push_back(CHICHINADZEMIN);}
+            for(int i = 0; i < numVariables; i++){maxValues.push_back(CHICHINADZEMAX);}
+            break;
+        case 13:
+            printf("You chose the Cross-in-tray Function. min=-2.06261 at (+-1.3491, +-1.3491) \n");
+            flagComplex = false;
+            optimizationFunction = &crossintrayFunction;
+            flagMultiDim = false;
+            numVariables = findnumVariables(flagMultiDim);
+            for(int i = 0; i < numVariables; i++){minValues.push_back(CROSSINTRAYMIN);}
+            for(int i = 0; i < numVariables; i++){maxValues.push_back(CROSSINTRAYMAX);}
+            break;
+        case 14:
+            printf("You chose the Cross-Leg Table Function. min=-1 at (0, X) or (X, 0) \n");
+            flagComplex = false;
+            optimizationFunction = &crosslegtableFunction;
+            flagMultiDim = false;
+            numVariables = findnumVariables(flagMultiDim);
+            for(int i = 0; i < numVariables; i++){minValues.push_back(CROSSLEGTABLEMIN);}
+            for(int i = 0; i < numVariables; i++){maxValues.push_back(CROSSLEGTABLEMAX);}
+            break;
+        case 15:
+            printf("You chose the Crowned Cross Function. min=0 at UNKNOWN \n");
+            flagComplex = false;
+            optimizationFunction = &crownedcrossFunction;
+            flagMultiDim = false;
+            numVariables = findnumVariables(flagMultiDim);
+            for(int i = 0; i < numVariables; i++){minValues.push_back(CROWNEDCROSSMIN);}
+            for(int i = 0; i < numVariables; i++){maxValues.push_back(CROWNEDCROSSMAX);}
+            break;
+        case 16:
+            printf("You chose the Cube Function. min=0 at (1,1) \n");
+            flagComplex = false;
+            optimizationFunction = &cubeFunction;
+            flagMultiDim = false;
+            numVariables = findnumVariables(flagMultiDim);
+            for(int i = 0; i < numVariables; i++){minValues.push_back(CUBEMIN);}
+            for(int i = 0; i < numVariables; i++){maxValues.push_back(CUBEMAX);}
+            break;
+        case 17:
+            printf("You chose the Easom Function. min=-1 at (3.14159265, 3.14159265) \n");
+            flagComplex = false;
+            optimizationFunction = &easomFunction;
+            flagMultiDim = false;
+            numVariables = findnumVariables(flagMultiDim);
+            for(int i = 0; i < numVariables; i++){minValues.push_back(EASOMMIN);}
+            for(int i = 0; i < numVariables; i++){maxValues.push_back(EASOMMAX);}
+            break;
+        case 18:
+            printf("You chose the Eggholder Function. min=-959.6407 at (512, 404.2319) \n");
+            flagComplex = false;
+            optimizationFunction = &eggholderFunction;
+            flagMultiDim = false;
+            numVariables = findnumVariables(flagMultiDim);
+            for(int i = 0; i < numVariables; i++){minValues.push_back(EGGHOLDERMIN);}
+            for(int i = 0; i < numVariables; i++){maxValues.push_back(EGGHOLDERMAX);}
+            break;
+        case 19:
+            printf("You chose the Giunta Function. min=0.06447 at (0,46732002, 0.46732002) \n");
+            flagComplex = false;
+            optimizationFunction = &giuntaFunction;
+            flagMultiDim = false;
+            numVariables = findnumVariables(flagMultiDim);
+            for(int i = 0; i < numVariables; i++){minValues.push_back(GIUNTAMIN);}
+            for(int i = 0; i < numVariables; i++){maxValues.push_back(GIUNTAMAX);}
+            break;
+        case 20:
+            printf("You chose the Goldstein-price Function. min=3 at (0, -1) \n");
+            flagComplex = false;
+            optimizationFunction = &goldsteinpriceFunction;
+            flagMultiDim = false;
+            numVariables = findnumVariables(flagMultiDim);
+            for(int i = 0; i < numVariables; i++){minValues.push_back(GOLDSTEINPRICEMIN);}
+            for(int i = 0; i < numVariables; i++){maxValues.push_back(GOLDSTEINPRICEMAX);}
+            break;
+        case 21:
+            printf("You chose the Himmelblau Function. min=0 at (3,2), (-2.805118, 3.131312), (-3.779310, -3.283186) e (3.584428, -1.848126) \n");
+            flagComplex = false;
+            optimizationFunction = &himmelblauFunction;
+            flagMultiDim = false;
+            numVariables = findnumVariables(flagMultiDim);
+            for(int i = 0; i < numVariables; i++){minValues.push_back(HIMMELBLAUMIN);}
+            for(int i = 0; i < numVariables; i++){maxValues.push_back(HIMMELBLAUMAX);}
+            break;
+        case 22:
+            printf("You chose the Holdertable Function. min=-19.2085 at (+-8.05502, +-9.66459)\n");
+            flagComplex = false;
+            optimizationFunction = &holdertableFunction;
+            flagMultiDim = false;
+            numVariables = findnumVariables(flagMultiDim);
+            for(int i = 0; i < numVariables; i++){minValues.push_back(HOLDERTABLEMIN);}
+            for(int i = 0; i < numVariables; i++){maxValues.push_back(HOLDERTABLEMAX);}
+            break;
+        case 23:
+            printf("You chose the Leon Function. min=0 at (1, 1)\n");
+            flagComplex = false;
+            optimizationFunction = &leonFunction;
+            flagMultiDim = false;
+            numVariables = findnumVariables(flagMultiDim);
+            for(int i = 0; i < numVariables; i++){minValues.push_back(LEONMIN);}
+            for(int i = 0; i < numVariables; i++){maxValues.push_back(LEONMAX);}
+            break;
+        case 24:
+            printf("You chose the Levi13 Function. min=0 at (1, 1)\n");
+            flagComplex = false;
+            optimizationFunction = &levi13Function;
+            flagMultiDim = false;
+            numVariables = findnumVariables(flagMultiDim);
+            for(int i = 0; i < numVariables; i++){minValues.push_back(LEVI13MIN);}
+            for(int i = 0; i < numVariables; i++){maxValues.push_back(LEVI13MAX);}
+            break;
+        case 25:
+            printf("You chose the Matyas Function. min=0 at (0, 0)\n");
+            flagComplex = false;
+            optimizationFunction = &matyasFunction;
+            flagMultiDim = false;
+            numVariables = findnumVariables(flagMultiDim);
+            for(int i = 0; i < numVariables; i++){minValues.push_back(MATYASMIN);}
+            for(int i = 0; i < numVariables; i++){maxValues.push_back(MATYASMAX);}
+            break;
+        case 26:
+            printf("You chose the Mccormick Function. min=-1.9133 at (-0.54719, -1.54719)\n");
+            flagComplex = false;
+            optimizationFunction = &mccormickFunction;
+            flagMultiDim = false;
+            numVariables = findnumVariables(flagMultiDim);
+            for(int i = 0; i < numVariables; i++){(i==0)?(minValues.push_back(MCCORMICKXMIN)):(minValues.push_back(MCCORMICKYMIN));}
+            for(int i = 0; i < numVariables; i++){(i==0)?(maxValues.push_back(MCCORMICKXMAX)):(maxValues.push_back(MCCORMICKYMAX));}
+            break;
+        case 27:
+            printf("You chose the Modified Schaffer N1 Function. min=0 at (0, 0)\n");
+            flagComplex = false;
+            optimizationFunction = &schafferN1Function;
+            flagMultiDim = false;
+            numVariables = findnumVariables(flagMultiDim);
+            for(int i = 0; i < numVariables; i++){minValues.push_back(SCHAFFERN1MIN);}
+            for(int i = 0; i < numVariables; i++){maxValues.push_back(SCHAFFERN1MAX);}
+            break;
+        case 28:
+            printf("You chose the Modified Schaffer N4 Function. min=0.292579 at (0, +-1.253132) and (+-1.253132, 0)  \n");
+            flagComplex = false;
+            flagMultiDim = false;
+            optimizationFunction = &schafferN4Function;
+            numVariables = findnumVariables(flagMultiDim);
+            for(int i = 0; i < numVariables; i++){minValues.push_back(SCHAFFERN4MIN);}
+            for(int i = 0; i < numVariables; i++){maxValues.push_back(SCHAFFERN4MAX);}
+            break;
+        case 29:
+            printf("You chose the Roots Function. max=abs(f(z))=1 at the sixth roots of unity. \n");
+            flagComplex = true;
+            flagMultiDim = false;
+            optimizationComplexFunction = &rootsFunction;
+            numVariables = 1; //I've got how many variables, again? This might cause problems.
+            for(int i = 0; i < numVariables; i++){minValues.push_back(ROOTSMIN);}
+            for(int i = 0; i < numVariables; i++){maxValues.push_back(ROOTSMAX);}
+            break;
+        default:
+            printf("ERROR: Invalid input. Write an integer from 1 to 29.");
+            //Find way to deal with this case
     }
 }

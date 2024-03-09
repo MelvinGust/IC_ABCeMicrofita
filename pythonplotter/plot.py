@@ -15,17 +15,14 @@ with open(file_path, 'r') as file:
 x_values = [point[0] for point in points]
 y_values = [point[1] for point in points]
 
-# Plot the points
-plt.scatter(x_values, y_values, color='black')
-
 # Connect points with lines
 for i in range(len(points) - 1):
-    plt.plot([points[i][0], points[i+1][0]], [points[i][1], points[i+1][1]], color='blue')
+    plt.plot([points[i][0], points[i+1][0]], [points[i][1], points[i+1][1]], color='red')
 
 # Set labels and title
-plt.xlabel('Number of foraging cycles')
-plt.ylabel('Value of the dependent variable')
-plt.title('Optimization Scatter Plot')
+plt.xlabel('Ciclos de forrageamento')
+plt.ylabel('|g(z)|')
+plt.title('|g(z)| x Ciclos de forrageamento')
 
 # Show the plot
 plt.grid(True)

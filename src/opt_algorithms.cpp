@@ -22,7 +22,7 @@ more general and intuitive.
 
 #include <opt_algorithms.hpp>
 #include <vector>
-#include <math.h>
+#include <cmath>
 
 double ackleyFunction(const std::vector<double> &var, int numVar){ // var[] ou *var
     double sum_varsqr = 0.0;
@@ -44,6 +44,33 @@ double sphereFunction(const std::vector<double> &var, int numVar){
         result = result + pow(var.at(index),2);
     }
     return result;
+}
+
+double rosenbrockFunction(const std::vector<double> &var, int numVar){
+    double result = 0;
+    for(int w = 0; w < numVar-1; w++){
+        result = result + (100.0)*pow((var[w+1]-pow(var[w],2)),2) + pow(var[w]-1,2);
+    }
+    return result; 
+}
+
+double rastriginFunction(const std::vector<double> &var, int numVar){
+    double result = (10.0)*((double)(numVar));
+    for(int w = 0; w < numVar; w++){
+        result = result + pow(var[w],2)-(10.0)*cos(2*PI*var[w]);
+    }
+    return result;
+}
+
+double griewankFunction(const std::vector<double> &var, int numVar){
+    double sumresult = 0.0; // Sum Identity
+    double productresult = 1.0; // Product Identity
+    for(int w = 0; w < numVar; w++){
+        sumresult = sumresult + pow(var[w],2)/(4000.0);
+        //The 1.0 is present since we are counting starting from 0, which leads to bugs.
+        productresult = productresult*cos(var[w]/(sqrt(w+1.0)));
+    }
+    return sumresult-productresult+1.0;
 }
 
 double bealeFunction(const std::vector<double> &var, int numVar){
@@ -68,9 +95,9 @@ double boothFunction(const std::vector<double> &var, int numVar){
     return exp1+exp2;   
 }   
 
-// Is this function well defined?
+// HARD to optimize
 double bukin6Function(const std::vector<double> &var, int numVar){
-    return 100*sqrt(fabs(var[1]-0.01*pow(var[0],2)))+0.01*fabs(var[0]+10);
+    return 100.0*sqrt(fabs(var[1]-0.01*pow(var[0],2)))+0.01*fabs(var[0]+10.0);
 }
 
 double carromtableFunction(const std::vector<double> &var, int numVar){
@@ -100,20 +127,88 @@ double crosslegtableFunction(const std::vector<double> &var, int numVar){
     return (-1.0)/(pow(exp2+1.0,0.1));
 }
 
-double rosenbrockFunction(const std::vector<double> &var, int numVar){
-    double result = 0;
-    for(int w = 0; w < numVar-1; w++){
-        result = result + (100.0)*pow((var[w+1]-pow(var[w],2)),2) + pow(var[w]-1,2);
-    }
-    return result; 
+double crownedcrossFunction(const std::vector<double> &var, int numVar){
+    double exp1 = sqrt(pow(var[0],2)+pow(var[1],2));
+    double exp2 = exp(fabs(100.0-exp1/PI))*sin(var[0])*sin(var[1]);
+    return (0.0001)*pow(fabs(exp2)+1,0.1);
 }
 
-double rastriginFunction(const std::vector<double> &var, int numVar){
-    double result = (10.0)*((double)(numVar));
+double cubeFunction(const std::vector<double> &var, int numVar){
+    double exp1 = 100.0*pow(var[1]-pow(var[0],3),2);
+    double exp2 = pow(1-var[0],2);
+    return exp1 + exp2;
+}
+
+double easomFunction(const std::vector<double> &var, int numVar){
+    double exp1 = -pow(var[0]-PI,2)-pow(var[1]-PI,2);
+    double exp2 = -cos(var[0])*cos(var[1])*exp(exp1);
+    return exp2;
+}
+
+double eggholderFunction(const std::vector<double> &var, int numVar){
+    double exp1 = sqrt(fabs(var[1]+var[0]/2.0+47.0));
+    double exp2 = sqrt(fabs(var[0]-(var[1]+47.0)));
+    return -(var[1]+47.0)*sin(exp1)-var[0]*sin(exp2);
+}
+
+double giuntaFunction(const std::vector<double> &var, int numVar){
+    double result = 0.0;
     for(int w = 0; w < numVar; w++){
-        result = result + pow(var[w],2)-(10.0)*cos(2*PI*var[w]);
+        result = result + sin(((16.0)/(15.0))*var[w]-1.0)+pow(sin(((16.0)/(15.0))*var[w]-1.0),2)+((1.0)/(50.0))*sin((4.0)*(((16.0)/(15.0))*var[w]-1));
     }
-    return result;
+    return 0.6+result;
+}
+
+double goldsteinpriceFunction(const std::vector<double> &var, int numVar){
+    double exp1 = 19.0-(14.0)*var[0]+(3.0)*pow(var[0],2)-(14.0)*var[1]+(6.0)*var[0]*var[1]+(3.0)*pow(var[1],2);
+    double exp2 = 18.0-(32.0)*var[0]+(12.0)*pow(var[0],2)+(48.0)*var[1]-(36.0)*var[0]*var[1]+(27.0)*pow(var[1],2);
+    return (1+pow(var[0]+var[1]+1.0,2)*exp1)*(30+pow(2*var[0]-3*var[1],2)*exp2);
+}
+
+double helicalvalleyFunction(const std::vector<double> &var, int numVar){
+    double thetafunc = 0.0;
+    if((var[0]>0.0)||(var[0]==0.0)){ //Divisoa entre 0 é problemático
+        thetafunc = ((1.0)/(2.0*PI))*atan(var[1]/var[0]);
+    }else{
+        thetafunc = ((1.0)/(2.0*PI))*atan(var[1]/var[0]+0.5);
+    }
+    return (100.0)*(pow(var[2]-(10.0)*thetafunc,2)+pow((sqrt(pow(var[0],2)+pow(var[1],2))-1.0),2))+pow(var[2],2);
+}
+
+double himmelblauFunction(const std::vector<double> &var, int numVar){
+    double exp1 = pow(pow(var[0],2)+var[1]-11.0,2);
+    double exp2 = pow(var[0]+pow(var[1],2)-7.0,2);
+    return exp1+exp2;
+}
+
+double holdertableFunction(const std::vector<double> &var, int numVar){
+    double exp1 = sqrt(pow(var[0],2)+pow(var[1],2))/PI;
+    return -fabs(sin(var[0])*cos(var[1])*exp(fabs(1.0-exp1)));
+}
+
+double leonFunction(const std::vector<double> &var, int numVar){
+    return (100.0)*pow(var[1]-pow(var[0],2),2)+pow(1.0-var[0],2);
+}
+
+double levi13Function(const std::vector<double> &var, int numVar){
+    double exp1 = pow(var[0]-1.0,2)*(1.0+pow(sin(3.0*PI*var[1]),2));
+    double exp2 = pow(var[1]-1.0,2)*(1.0+pow(sin(2.0*PI*var[1]),2));
+    return pow(sin(3.0*PI*var[0]),2)+exp1+exp2;
+}
+
+double matyasFunction(const std::vector<double> &var, int numVar){
+    return (0.26)*(pow(var[0],2)+pow(var[1],2))-(0.48)*var[0]*var[1];
+}
+
+double mccormickFunction(const std::vector<double> &var, int numVar){
+    return sin(var[0]+var[1])+pow(var[0]-var[1],2)-(1.5)*var[0]+(2.5)*var[1]+1.0;
+}
+
+double schafferN1Function(const std::vector<double> &var, int numVar){
+    double exp1 = pow(var[0],2)+pow(var[1],2);
+    double exp2 = pow(sin(pow(exp1,2)),2)-0.5;
+    double exp3 = pow(1.0+(0.001)*(pow(var[0],2)+pow(var[1],2)),2);
+    return 0.5+exp2/exp3;
 }
 
 // HARD to optimize

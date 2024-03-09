@@ -23,10 +23,10 @@ ax = fig.add_subplot(111, projection='3d')
 surf = ax.plot_surface(X, Y, np.abs(G), cmap='viridis')
 
 # Add labels and title
-ax.set_xlabel('Real part of z')
-ax.set_ylabel('Imaginary part of z')
+ax.set_xlabel('Re(z)')
+ax.set_ylabel('Im(z)')
 ax.set_zlabel('|g(z)|')
-ax.set_title('|g(z)| for g(z) = 1/|z^6 - 1|')
+ax.set_title('|g(z)| : g(z) = 1/|z^6 - 1|')
 
 # Add a color bar
 fig.colorbar(surf, ax=ax, shrink=0.5, aspect=5)
