@@ -167,10 +167,10 @@ double goldsteinpriceFunction(const std::vector<double> &var, int numVar){
 
 double helicalvalleyFunction(const std::vector<double> &var, int numVar){
     double thetafunc = 0.0;
-    if((var[0]>0.0)||(var[0]==0.0)){ //Divisoa entre 0 é problemático
+    if((var[0]>0.0)||(var[0]==0.0)){ //Divisao entre 0 é problemático
         thetafunc = ((1.0)/(2.0*PI))*atan(var[1]/var[0]);
     }else{
-        thetafunc = ((1.0)/(2.0*PI))*atan(var[1]/var[0]+0.5);
+        thetafunc = ((1.0)/(2.0*PI))*(atan(var[1]/var[0])+PI);
     }
     return (100.0)*(pow(var[2]-(10.0)*thetafunc,2)+pow((sqrt(pow(var[0],2)+pow(var[1],2))-1.0),2))+pow(var[2],2);
 }

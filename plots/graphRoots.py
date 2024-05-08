@@ -17,16 +17,16 @@ G = g(Z)
 
 # Create a 3D plot
 fig = plt.figure(figsize=(10, 8))
-ax = fig.add_subplot(111, projection='3d')
+ax = fig.add_subplot(111, projection='cont')
 
 # Plot the modulus of g(z)
-surf = ax.plot_surface(X, Y, np.abs(G), cmap='viridis')
+surf = ax.plot_surface(X, Y, np.abs(G), cmap='plasma')
 
 # Add labels and title
 ax.set_xlabel('Re(z)')
 ax.set_ylabel('Im(z)')
-ax.set_zlabel('|g(z)|')
-ax.set_title('|g(z)| : g(z) = 1/|z^6 - 1|')
+ax.set_zlabel('Magnitude da função g(z) (|g(z)|)')
+ax.set_title('Mapa de contorno da magnitude de g(z) = 1/|z^6 - 1|')
 
 # Add a color bar
 fig.colorbar(surf, ax=ax, shrink=0.5, aspect=5)

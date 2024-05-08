@@ -43,7 +43,7 @@ Here I include the libraries I'll be using for this code.
 be optimizing.
 */
 #include <stdlib.h>
-#include <stdio.h> // What does this do?
+#include <stdio.h>
 #include <time.h>
 #include <vector> //std::
 #include <array> //std::
@@ -64,10 +64,10 @@ using std::complex;
 - SCOUTLIMIT : The maximum number of times a scout bee will remain in a single point.
 - NUMFORAGING : The maximum number of cycles the program will run for.
 */
-#define NUMBEES 10000 // Number of bees in my population (NEEDS TO BE DIVISIBLE BY 2)
-#define SCOUTLIMIT 10 // Max number of times a scout will remain for some reason, bugs out for lower numbers. 
+#define NUMBEES 50 // Number of bees in my population (NEEDS TO BE DIVISIBLE BY 2)
+#define SCOUTLIMIT 5 // Max number of times a scout will remain for some reason, bugs out for lower numbers. 
 // NOTE, Scoutlimit impacts a TON the precision of our process, apparently.
-#define NUMFORAGING 5000 // Maximum cycle number
+#define NUMFORAGING 200 // Maximum cycle number
 
 // #define teste_valores
 // #define teste_geral
@@ -98,6 +98,7 @@ vector<double> minValues;
 vector<double> maxValues;
 
 int numLoop = 0;
+int bigLoop = 0;
 int numActiveOnlookers = 0;
 int numVariables = 0;
 double bestSolution = 0.0;
@@ -105,10 +106,8 @@ complex<double> bestComplexSolution = {0.0, 0.0};
 bool flagComplex = false;
 bool flagMultiDim = false;
 bool flagWaitInput = false;
-bool stopProgram = false;
-double desiredExtrema;
 
-std::ofstream performanceAnalysis ("pythonplotter/ABCperformance.txt"); // Opening my text file for storing data.
+std::ofstream performanceAnalysis ("plots/ABCperformance6.txt"); // Opening my text file for storing data.
 
 // Initial definition of the functions used in the program
 double (*optimizationFunction)(const vector<double> &arr, int size); //
@@ -130,210 +129,209 @@ void evaluationPhase(const array<complex<double>, numfoodSources> &solutionArray
 -----------------
 */
 int main(void){
-    // Aqui inicializo a semente utilizada para o rand(). Assim, o resultado é distinto cada iteração.
-    srand(time(NULL));
-    
-    // In this second part we'll select the function to be used and its constraint parameters.
+    // In this part we'll select the function to be used and its constraint parameters.
     initUserInput();
 
-    switch(flagComplex){
-        case true:
-        { // To limit the scope of the variables I've defined inside of this code.
-            array<complex<double>, numfoodSources> solutionNeighbor;
-            array<complex<double>, numfoodSources> solutionArray; 
-            vector<complex<double>> bestfoodSources;
-            array<vector<complex<double>>, numfoodSources> foodsourceNeighbor;       
-            array<vector<complex<double>>, numfoodSources> foodSources;
+    // Here I'll initialize the seed used for rand() calculations. This way, the result is different
+    // every single iteration.
+    srand(time(NULL));
 
-            /* ----- Initialize ----- */
-            for (int i = 0; i < numfoodSources; i++){
-                for (int k = 0; k < numVariables; k++){
-                    foodSources[i].push_back(complex<double>(((double)rand()/((double)(RAND_MAX)))*(maxValues[k] - minValues[k]) + minValues[k], ((double)rand()/((double)(RAND_MAX)))*(maxValues[k] - minValues[k]) + minValues[k]));
-                    foodsourceNeighbor[i].push_back(complex<double>(0.0, 0.0)); 
-                    bestfoodSources.push_back(complex<double>(0.0, 0.0)); // Remember to initialize vectors.
-                }
-                solutionArray[i] = (*optimizationComplexFunction)(foodSources[i], numfoodSources);
-                #ifdef teste_valores
-                    printf("solutionArray[%lf]\n", solutionArray[i]);
-                #endif
-            }
+    // Feito para controlar loop 
+    while( bigLoop < 100){
+        numLoop = 0;
+        numActiveOnlookers = 0;
+        bestSolution = 0.0;
+        bestComplexSolution = {0.0, 0.0};
+        switch(flagComplex){
+            case true:
+            { // To limit the scope of the variables I've defined inside of this code.
+                array<complex<double>, numfoodSources> solutionNeighbor;
+                array<complex<double>, numfoodSources> solutionArray; 
+                vector<complex<double>> bestfoodSources;
+                array<vector<complex<double>>, numfoodSources> foodsourceNeighbor;       
+                array<vector<complex<double>>, numfoodSources> foodSources;
 
-            // Define best solution and its parameters.
-            bestComplexSolution = solutionArray[0];
-            for (const auto& fsource_itr : foodSources[0]){  // It's a range for loop, copies value by reference.
-                bestfoodSources.push_back(fsource_itr);
-                #ifdef teste_valores
-                    printf("Salvei em bestfoodSources: (%lf, %lf)\n", std::real(fsource_itr), std::imag(fsource_itr));
-                #endif
-            }
-            /* ----- End of initialization ----- */
-
-            /* ------------------------------------------ ENTER LOOP ----------------------------------------- */
-            while(numLoop < NUMFORAGING){
-                numLoop++; // Increment numLoop every cycle.
-                #ifdef teste_geral
-                    printf("Estamos no loop num: %d\n", numLoop);
-                #endif
-                saveBestSolution(bestfoodSources, foodSources, solutionArray, numfoodSources, numVariables); // CHECK
-                #ifdef teste_geral
-                    printf("Entrando em employedBees\n");
-                #endif
-                employedBees(foodSources, foodsourceNeighbor, solutionArray, solutionNeighbor, numfoodSources, numVariables); // CHECK
-                #ifdef teste_geral
-                    printf("Entrando em evaluationPhase\n");
-                #endif
-                evaluationPhase(solutionNeighbor, numfoodSources); // CHECK
-                #ifdef teste_geral
-                    printf("Entrando em onlookerBees\n");
-                #endif
-                onlookerBees(foodSources, foodsourceNeighbor, solutionArray, solutionNeighbor, numfoodSources, numVariables); // CHECK 
-                saveBestSolution(bestfoodSources, foodSources, solutionArray, numfoodSources, numVariables);        
-                // If the best solution found is good enough, stop looping.
-                /*
-                if((bestSolution  > CONVERGENCIA*desiredExtrema)&&(bestSolution < desiredExtrema + (1-CONVERGENCIA)*desiredExtrema)){
-                    stopProgram = true;
-                }
-                */
-
-                /* ------- Scout Bee Phase ------- */
-                for(int i = 0; i < numfoodSources; i++){
-                    if( numAttempts[i] >= SCOUTLIMIT ){
-                        for (int k = 0; k < numVariables; k++){
+                /* ----- Initialize ----- */
+                for (int i = 0; i < numfoodSources; i++){
+                    for (int k = 0; k < numVariables; k++){
                         foodSources[i].push_back(complex<double>(((double)rand()/((double)(RAND_MAX)))*(maxValues[k] - minValues[k]) + minValues[k], ((double)rand()/((double)(RAND_MAX)))*(maxValues[k] - minValues[k]) + minValues[k]));
-                        }
-                        solutionArray[i] = (*optimizationComplexFunction)(foodSources[i], numfoodSources);
-                        numAttempts[i] = 0;
+                        foodsourceNeighbor[i].push_back(complex<double>(0.0, 0.0)); 
+                        bestfoodSources.push_back(complex<double>(0.0, 0.0)); // Remember to initialize vectors.
                     }
-                } 
-
-                if(performanceAnalysis.is_open()){
-                    performanceAnalysis << numLoop << " " << abs(bestComplexSolution) << "\n";
-                }
-                /* ------- End of scout bee phase ------- */
-            }
-            performanceAnalysis.close();
-            /* ---------------------------------------- OUT OF LOOP ------------------------------------------ */
-            printf("The best solution found is %lf+i%lf\n", real(bestComplexSolution), imag(bestComplexSolution));
-            for (int k = 0; k < numVariables; k++){
-                printf("%lf+i%lf\t", real(bestfoodSources[k]), imag(bestfoodSources[k]));
-            }
-            printf("\nIt took %d cycles", numLoop);
-            break;
-        }
-        case false:
-        {
-            // Here we define the vectors we'll use for this program. Their size is numVariables.
-            // Please note I need to initialize everything properly, in order to not have problems later on
-            // with dimensioning.
-            array<double, numfoodSources> solutionNeighbor; // Talvez precise mudar par std::complex
-            array<double, numfoodSources> solutionArray; // Talvez precise fazer ele std::complex
-            vector<double> bestfoodSources;
-            array<vector<double>, numfoodSources> foodsourceNeighbor;       
-            array<vector<double>, numfoodSources> foodSources; // Seems unnecesary, might change later.
-
-            /* ----- Initialize ----- */
-            for (int i = 0; i < numfoodSources; i++){
-                for (int k = 0; k < numVariables; k++){ // This determines the 2D-ness of foodSources.
-                    foodSources[i].push_back(((double)rand()/((double)(RAND_MAX)))*(maxValues[k] - minValues[k]) + minValues[k]);
+                    solutionArray[i] = (*optimizationComplexFunction)(foodSources[i], numfoodSources);
                     #ifdef teste_valores
-                        printf("foodSources[%d][%d] = %lf\t", i, k, foodSources[i][k]);
+                        printf("solutionArray[%lf]\n", solutionArray[i]);
                     #endif
-                    foodsourceNeighbor[i].push_back(0.0); // Since I'm using vectors I need to initialize them
-                    bestfoodSources.push_back(0.0); // Remember to initialize vectors.
                 }
-                solutionArray[i] = (*optimizationFunction)(foodSources[i], numVariables);
-                #ifdef teste_valores
-                    printf("\nsolutionArray[%d] = %lf\n", i, solutionArray[i]);
-                #endif
-            }
 
-            // Define best solution and its parameters.
-            bestSolution = solutionArray[0];
-            for (const auto& fsource_itr : foodSources[0]){  // It's a range for loop, copies value by reference.
-                bestfoodSources.push_back(fsource_itr);
-                #ifdef teste_valores
-                    printf("Salvei em bestfoodSources: %lf\n", fsource_itr);
-                #endif
-            }
-            /* ----- End of initialization ----- */
-
-            /* ------------------------------------------ ENTER LOOP ----------------------------------------- */
-            while(numLoop < NUMFORAGING){
-                numLoop++; // Increment numLoop every cycle.
-                #ifdef teste_scout
-                    for(int i = 0; i < numfoodSources; i++){
-                        printf("1: numAttempts[%d] = %d\t", i, numAttempts[i]);
-                    }
-                    printf("\n\n");
-                #endif
-                #ifdef teste_geral
-                    printf("Estamos no loop num: %d\n", numLoop);
-                #endif
-                saveBestSolution(bestfoodSources, foodSources, solutionArray, numfoodSources, numVariables); // CHECK
-                #ifdef teste_geral
-                    printf("Entrando em employedBees\n");
-                #endif
-                employedBees(foodSources, foodsourceNeighbor, solutionArray, solutionNeighbor, numfoodSources, numVariables); // CHECK
-                #ifdef teste_geral
-                    printf("Entrando em evaluationPhase\n");
-                #endif
-                #ifdef teste_scout
-                    for(int i = 0; i < numfoodSources; i++){
-                        printf("2: numAttempts[%d] = %d\t", i, numAttempts[i]);
-                    }
-                    printf("\n\n");
-                #endif
-                evaluationPhase(solutionNeighbor, numfoodSources); // CHECK
-                #ifdef teste_geral
-                    printf("Entrando em onlookerBees\n");
-                #endif
-                onlookerBees(foodSources, foodsourceNeighbor, solutionArray, solutionNeighbor, numfoodSources, numVariables); // CHECK 
-                saveBestSolution(bestfoodSources, foodSources, solutionArray, numfoodSources, numVariables);     
-                #ifdef teste_geral
-                    printf("Entrando em scoutBees\n");
-                #endif   
-                // If the best solution found is good enough, stop looping.
-                /*
-                if((bestSolution  > CONVERGENCIA*desiredExtrema)&&(bestSolution < desiredExtrema + (1-CONVERGENCIA)*desiredExtrema)){
-                    stopProgram = true;
+                // Define best solution and its parameters.
+                bestComplexSolution = solutionArray[0];
+                for (const auto& fsource_itr : foodSources[0]){  // It's a range for loop, copies value by reference.
+                    bestfoodSources.push_back(fsource_itr);
+                    #ifdef teste_valores
+                        printf("Salvei em bestfoodSources: (%lf, %lf)\n", std::real(fsource_itr), std::imag(fsource_itr));
+                    #endif
                 }
-                */
-                #ifdef teste_scout
-                    for(int i = 0; i < numfoodSources; i++){
-                        printf("3: numAttempts[%d] = %d\t", i, numAttempts[i]);
-                    }
-                    printf("\n\n");
-                #endif
+                /* ----- End of initialization ----- */
 
-                /* ------- Scout Bee Phase ------- */
-                for(int i = 0; i < numfoodSources; i++){
-                    if( numAttempts[i] > 30 ){
-                        #ifdef teste_geral
-                        printf("Entrando em scoutBeePhase\n");
-                        #endif
-                        for (int k = 0; k < numVariables; k++){
-                            foodSources[i][k] = ((double)rand()/((double)(RAND_MAX)))*(maxValues[k] - minValues[k] + minValues[k]);
+                /* ------------------------------------------ ENTER LOOP ----------------------------------------- */
+                while(numLoop < NUMFORAGING){
+                    numLoop++; // Increment numLoop every cycle.
+                    #ifdef teste_geral
+                        printf("Estamos no loop num: %d\n", numLoop);
+                    #endif
+                    saveBestSolution(bestfoodSources, foodSources, solutionArray, numfoodSources, numVariables); // CHECK
+                    #ifdef teste_geral
+                        printf("Entrando em employedBees\n");
+                    #endif
+                    employedBees(foodSources, foodsourceNeighbor, solutionArray, solutionNeighbor, numfoodSources, numVariables); // CHECK
+                    #ifdef teste_geral
+                        printf("Entrando em evaluationPhase\n");
+                    #endif
+                    evaluationPhase(solutionNeighbor, numfoodSources); // CHECK
+                    #ifdef teste_geral
+                        printf("Entrando em onlookerBees\n");
+                    #endif
+                    onlookerBees(foodSources, foodsourceNeighbor, solutionArray, solutionNeighbor, numfoodSources, numVariables); // CHECK 
+                    saveBestSolution(bestfoodSources, foodSources, solutionArray, numfoodSources, numVariables);        
+
+                    /* ------- Scout Bee Phase ------- */
+                    for(int i = 0; i < numfoodSources; i++){
+                        if( numAttempts[i] >= SCOUTLIMIT ){
+                            for (int k = 0; k < numVariables; k++){
+                            foodSources[i].push_back(complex<double>(((double)rand()/((double)(RAND_MAX)))*(maxValues[k] - minValues[k]) + minValues[k], ((double)rand()/((double)(RAND_MAX)))*(maxValues[k] - minValues[k]) + minValues[k]));
+                            }
+                            solutionArray[i] = (*optimizationComplexFunction)(foodSources[i], numfoodSources);
+                            numAttempts[i] = 0;
                         }
-                        solutionArray[i] = (*optimizationFunction)(foodSources[i], numVariables);
-                        numAttempts[i] = 0;
+                    } 
+
+                    if(performanceAnalysis.is_open()){
+                        performanceAnalysis << numLoop << " " << abs(bestComplexSolution) << "\n";
+                    }
+                    /* ------- End of scout bee phase ------- */
+                }
+                // performanceAnalysis.close();
+                /* ---------------------------------------- OUT OF LOOP ------------------------------------------ */
+                printf("The best solution found is %lf+i%lf\n", real(bestComplexSolution), imag(bestComplexSolution));
+                for (int k = 0; k < numVariables; k++){
+                    printf("%lf+i%lf\t", real(bestfoodSources[k]), imag(bestfoodSources[k]));
+                }
+                printf("\nIt took %d cycles", numLoop);
+                break;
+            }
+            case false:
+            {
+                // Here we define the vectors we'll use for this program. Their size is numVariables.
+                // Please note I need to initialize everything properly, in order to not have problems later on
+                // with dimensioning.
+                array<double, numfoodSources> solutionNeighbor; // Talvez precise mudar par std::complex
+                array<double, numfoodSources> solutionArray; // Talvez precise fazer ele std::complex
+                vector<double> bestfoodSources;
+                array<vector<double>, numfoodSources> foodsourceNeighbor;       
+                array<vector<double>, numfoodSources> foodSources; // Seems unnecesary, might change later.
+
+                /* ----- Initialize ----- */
+                for (int i = 0; i < numfoodSources; i++){
+                    for (int k = 0; k < numVariables; k++){ // This determines the 2D-ness of foodSources.
+                        foodSources[i].push_back(((double)rand()/((double)(RAND_MAX)))*(maxValues[k] - minValues[k]) + minValues[k]);
+                        #ifdef teste_valores
+                            printf("foodSources[%d][%d] = %lf\t", i, k, foodSources[i][k]);
+                        #endif
+                        foodsourceNeighbor[i].push_back(0.0); // Since I'm using vectors I need to initialize them
+                        bestfoodSources.push_back(0.0); // Remember to initialize vectors.
+                    }
+                    solutionArray[i] = (*optimizationFunction)(foodSources[i], numVariables);
+                    #ifdef teste_valores
+                        printf("\nsolutionArray[%d] = %lf\n", i, solutionArray[i]);
+                    #endif
+                }
+
+                // Define best solution and its parameters.
+                bestSolution = solutionArray[0];
+                for (const auto& fsource_itr : foodSources[0]){  // It's a range for loop, copies value by reference.
+                    bestfoodSources.push_back(fsource_itr);
+                    #ifdef teste_valores
+                        printf("Salvei em bestfoodSources: %lf\n", fsource_itr);
+                    #endif
+                }
+                /* ----- End of initialization ----- */
+
+                /* ------------------------------------------ ENTER LOOP ----------------------------------------- */
+                while(numLoop < NUMFORAGING){
+                    numLoop++; // Increment numLoop every cycle.
+                    #ifdef teste_scout
+                        for(int i = 0; i < numfoodSources; i++){
+                            printf("1: numAttempts[%d] = %d\t", i, numAttempts[i]);
+                        }
+                        printf("\n\n");
+                    #endif
+                    #ifdef teste_geral
+                        printf("Estamos no loop num: %d\n", numLoop);
+                    #endif
+                    saveBestSolution(bestfoodSources, foodSources, solutionArray, numfoodSources, numVariables); // CHECK
+                    #ifdef teste_geral
+                        printf("Entrando em employedBees\n");
+                    #endif
+                    employedBees(foodSources, foodsourceNeighbor, solutionArray, solutionNeighbor, numfoodSources, numVariables); // CHECK
+                    #ifdef teste_geral
+                        printf("Entrando em evaluationPhase\n");
+                    #endif
+                    #ifdef teste_scout
+                        for(int i = 0; i < numfoodSources; i++){
+                            printf("2: numAttempts[%d] = %d\t", i, numAttempts[i]);
+                        }
+                        printf("\n\n");
+                    #endif
+                    evaluationPhase(solutionNeighbor, numfoodSources); // CHECK
+                    #ifdef teste_geral
+                        printf("Entrando em onlookerBees\n");
+                    #endif
+                    onlookerBees(foodSources, foodsourceNeighbor, solutionArray, solutionNeighbor, numfoodSources, numVariables); // CHECK 
+                    saveBestSolution(bestfoodSources, foodSources, solutionArray, numfoodSources, numVariables);     
+                    #ifdef teste_geral
+                        printf("Entrando em scoutBees\n");
+                    #endif   
+
+                    #ifdef teste_scout
+                        for(int i = 0; i < numfoodSources; i++){
+                            printf("3: numAttempts[%d] = %d\t", i, numAttempts[i]);
+                        }
+                        printf("\n\n");
+                    #endif
+
+                    /* ------- Scout Bee Phase ------- */
+                    for(int i = 0; i < numfoodSources; i++){
+                        if( numAttempts[i] > 30 ){
+                            #ifdef teste_geral
+                            printf("Entrando em scoutBeePhase\n");
+                            #endif
+                            for (int k = 0; k < numVariables; k++){
+                                foodSources[i][k] = ((double)rand()/((double)(RAND_MAX)))*(maxValues[k] - minValues[k] + minValues[k]);
+                            }
+                            solutionArray[i] = (*optimizationFunction)(foodSources[i], numVariables);
+                            numAttempts[i] = 0;
+                        }
+                    }
+                    /* ------- End of scout bee phase ------- */
+
+                    if(performanceAnalysis.is_open()){
+                        performanceAnalysis << numLoop << " " << bestSolution << "\n";
                     }
                 }
-                /* ------- End of scout bee phase ------- */
-
-                if(performanceAnalysis.is_open()){
-                    performanceAnalysis << numLoop << " " << bestSolution << "\n";
+                // performanceAnalysis.close();
+                /* ---------------------------------------- OUT OF LOOP ------------------------------------------ */
+                printf("The best solution found is %lf\n", bestSolution);
+                for (int k = 0; k < numVariables; k++){
+                    printf("%lf\t", bestfoodSources[k]);
                 }
+                printf("\nIt took %d cycles", numLoop);
+                break;
             }
-            performanceAnalysis.close();
-            /* ---------------------------------------- OUT OF LOOP ------------------------------------------ */
-            printf("The best solution found is %lf\n", bestSolution);
-            for (int k = 0; k < numVariables; k++){
-                printf("%lf\t", bestfoodSources[k]);
-            }
-            printf("\nIt took %d cycles", numLoop);
-            break;
         }
+        bigLoop++;
     }
+    performanceAnalysis.close();
 
     return 0; //Return from main
 }

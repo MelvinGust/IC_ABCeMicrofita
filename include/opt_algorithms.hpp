@@ -37,7 +37,6 @@ The functions in the library are given below in the following format: ($Name)-(#
 27 - (!) Schaffer No.1 Function (2D) : https://mpra.ub.uni-muenchen.de/2718/1/MPRA_paper_2718.pdf
 28 - (!) (*) Schaffer No.4 Function (2D): https://www.sfu.ca/~ssurjano/schaffer4.html
 29 - (*) Root function (1D-Complex): An artificial immune network for multimodal function optimization IEEE
-
 (*) Important functions
 (!) Difficulty markers. The more, the harder the problem is.
 Some functions can be found in various research papers, such as:
